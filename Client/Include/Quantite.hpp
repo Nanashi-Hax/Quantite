@@ -8,7 +8,7 @@
 #include <thread>
 #include <functional>
 
-class Electite
+class Quantite
 {   
 public:
     using DataBreakInfoCallbackFunction = std::function<void(uint32_t, uint32_t)>;
@@ -22,8 +22,8 @@ public:
         Bit64 = 8
     };
 
-    Electite();
-    ~Electite();
+    Quantite();
+    ~Quantite();
 
     void start();
     void stop();
@@ -33,7 +33,7 @@ public:
     void connectServer(const std::string& ipAddress);
     void disconnectServer();
 
-    void setDataBreakpoint(uint32_t address, bool read, bool write, Electite::BreakpointSize size);
+    void setDataBreakpoint(uint32_t address, bool read, bool write, Quantite::BreakpointSize size);
     void unsetDataBreakpoint();
 
     void setDataBreakInfoCallback(DataBreakInfoCallbackFunction function);
@@ -50,7 +50,7 @@ private:
 
     DataBreakInfoCallbackFunction dataBreakInfoCallback;
 
-    static constexpr const uint16_t ELECTITE_PORT = 60000;
+    static constexpr const uint16_t Quantite_PORT = 60000;
 
     enum class Command : uint32_t;
     enum class Data : uint32_t;

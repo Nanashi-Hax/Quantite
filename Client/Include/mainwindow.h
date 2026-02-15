@@ -1,7 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
-#include "ElectiteViewModel.hpp"
+#include "QuantiteViewModel.hpp"
 #include "DataBreakInfoModel.hpp"
 
 QT_BEGIN_NAMESPACE
@@ -33,12 +33,12 @@ signals:
     void requestConnectServer(const QString& ipAddress);
     void requestDisconnectServer();
 
-    void requestSetDataBreakpoint(uint32_t address, bool read, bool write, Electite::BreakpointSize size);
+    void requestSetDataBreakpoint(uint32_t address, bool read, bool write, Quantite::BreakpointSize size);
     void requestUnsetDataBreakpoint();
 
 private:
     Ui::MainWindow *ui;
-    ElectiteViewModel electite;
+    QuantiteViewModel Quantite;
     DataBreakInfoModel dataBreakInfoModel;
 };
 

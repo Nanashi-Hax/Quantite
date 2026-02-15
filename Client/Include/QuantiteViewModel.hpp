@@ -1,9 +1,9 @@
 #pragma once
 
 #include <QObject>
-#include "Electite.hpp"
+#include "Quantite.hpp"
 
-class ElectiteViewModel : public QObject
+class QuantiteViewModel : public QObject
 {
     Q_OBJECT
 
@@ -14,7 +14,7 @@ public slots:
     void onConnectServer(const QString& ipAddress);
     void onDisconnectServer();
 
-    void onSetDataBreakpoint(uint32_t address, bool read, bool write, Electite::BreakpointSize size);
+    void onSetDataBreakpoint(uint32_t address, bool read, bool write, Quantite::BreakpointSize size);
     void onUnsetDataBreakpoint();
 
 public:
@@ -24,5 +24,5 @@ signals:
     void dataBreakReceived(uint32_t dAddress, uint32_t iAddress);
 
 private:
-    Electite electite;
+    Quantite Quantite;
 };

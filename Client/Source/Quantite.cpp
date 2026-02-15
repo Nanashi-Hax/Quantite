@@ -1,4 +1,4 @@
-#include "Electite.hpp"
+#include "Quantite.hpp"
 #include <IO.hpp>
 #include <Network.hpp>
 #include <QDebug>
@@ -6,51 +6,51 @@
 using namespace Library::IO;
 using namespace Library::Network;
 
-enum class Electite::Command : uint32_t
+enum class Quantite::Command : uint32_t
 {
     MemoryWrite32 = 0x0,
     SetDataBreakpoint = 0x1
 };
 
-enum class Electite::Data : uint32_t
+enum class Quantite::Data : uint32_t
 {
     DataBreakInfo = 0x0,
 };
 
-Electite::Electite()
+Quantite::Quantite()
 {
     Library::Network::Initialize();
 }
 
-Electite::~Electite()
+Quantite::~Quantite()
 {
     Library::Network::Shutdown();
 }
 
-void Electite::start()
+void Quantite::start()
 {
     processThread = std::make_unique<std::jthread>([this](std::stop_token token){ processLoop(token); });
 }
 
-void Electite::stop()
+void Quantite::stop()
 {
     processThread->request_stop();
     processThread.reset();
 }
 
-void Electite::connectServer(const std::string& ipAddress)
+void Quantite::connectServer(const std::string& ipAddress)
 {
     std::lock_guard<std::mutex> lock(socketMutex);
     if(!socket)
     {
         socket = std::make_unique<TcpSocket>();
-        socket->connect(ipAddress, ELECTITE_PORT);
+        socket->connect(ipAddress, Quantite_PORT);
         transporter = std::make_unique<Transporter>(*socket);
         qDebug() << "Connected";
     }
 }
 
-void Electite::disconnectServer()
+void Quantite::disconnectServer()
 {
     std::lock_guard<std::mutex> lock(socketMutex);
     if(socket)
@@ -62,7 +62,7 @@ void Electite::disconnectServer()
     }
 }
 
-void Electite::setDataBreakpoint(uint32_t address, bool read, bool write, BreakpointSize size)
+void Quantite::setDataBreakpoint(uint32_t address, bool read, bool write, BreakpointSize size)
 {
     if(!transporter) return;
     try
@@ -83,7 +83,7 @@ void Electite::setDataBreakpoint(uint32_t address, bool read, bool write, Breakp
     }
 }
 
-void Electite::unsetDataBreakpoint()
+void Quantite::unsetDataBreakpoint()
 {
     if(!transporter) return;
     try
@@ -105,12 +105,12 @@ void Electite::unsetDataBreakpoint()
     }
 }
 
-void Electite::setDataBreakInfoCallback(DataBreakInfoCallbackFunction function)
+void Quantite::setDataBreakInfoCallback(DataBreakInfoCallbackFunction function)
 {
     dataBreakInfoCallback = function;
 }
 
-void Electite::processLoop(std::stop_token token)
+void Quantite::processLoop(std::stop_token token)
 {
     while(!token.stop_requested())
     {
@@ -137,7 +137,7 @@ void Electite::processLoop(std::stop_token token)
     }
 }
 
-void Electite::processData(Stream& stream)
+void Quantite::processData(Stream& stream)
 {
     Data data;
     {
