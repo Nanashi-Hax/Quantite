@@ -8,13 +8,14 @@ using namespace Library::Network;
 
 enum class Quantite::Command : uint32_t
 {
-    MemoryWrite32 = 0x0,
-    SetDataBreakpoint = 0x1
+    SetDataBreakpoint = 0x0,
+    SetInstructionBreakpoint = 0x1
 };
 
 enum class Quantite::Data : uint32_t
 {
     DataBreakInfo = 0x0,
+    InstructionBreakInfo = 0x1
 };
 
 Quantite::Quantite()
@@ -110,6 +111,48 @@ void Quantite::setDataBreakInfoCallback(DataBreakInfoCallbackFunction function)
     dataBreakInfoCallback = function;
 }
 
+void Quantite::setInstructionBreakpoint(uint32_t address)
+{
+    if(!transporter) return;
+    try
+    {
+        BufferStream stream;
+        uint32_t id = static_cast<uint32_t>(Command::SetInstructionBreakpoint);
+        uint32_t enable = static_cast<uint32_t>(true);
+        stream << id << enable << address;
+        transporter->write(BufferStream::toPacket(stream));
+    }
+    catch(std::exception& e)
+    {
+        qDebug() << e.what();
+        disconnectServer();
+    }
+}
+
+void Quantite::unsetInstructionBreakpoint()
+{
+    if(!transporter) return;
+    try
+    {
+        BufferStream stream;
+        uint32_t id = static_cast<uint32_t>(Command::SetInstructionBreakpoint);
+        uint32_t enable = 0;
+        uint32_t address = 0;
+        stream << id << enable << address;
+        transporter->write(BufferStream::toPacket(stream));
+    }
+    catch(std::exception& e)
+    {
+        qDebug() << e.what();
+        disconnectServer();
+    }
+}
+
+void Quantite::setInstructionBreakInfoCallback(InstructionBreakInfoCallbackFunction function)
+{
+    instructionBreakInfoCallback = function;
+}
+
 void Quantite::processLoop(std::stop_token token)
 {
     while(!token.stop_requested())
@@ -158,6 +201,18 @@ void Quantite::processData(Stream& stream)
                 uint32_t instructionAddress = 0;
                 stream >> dataAddress >> instructionAddress;
                 if(dataBreakInfoCallback) dataBreakInfoCallback(dataAddress, instructionAddress);
+            }
+            break;
+        }
+        case Data::InstructionBreakInfo:
+        {
+            uint32_t count = 0;
+            stream >> count;
+            for(uint32_t i = 0; i < count; i++)
+            {
+                uint32_t instructionAddress = 0;
+                stream >> instructionAddress;
+                if(instructionBreakInfoCallback) instructionBreakInfoCallback(instructionAddress);
             }
             break;
         }

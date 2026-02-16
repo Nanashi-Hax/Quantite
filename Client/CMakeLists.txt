@@ -19,11 +19,13 @@ qt_add_executable(Quantite
     Source/mainwindow.cpp
     Source/Quantite.cpp
     Source/DataBreakInfoModel.cpp
+    Source/InstructionBreakInfoModel.cpp
     Source/QuantiteViewModel.cpp
     
     Include/mainwindow.h
     Include/Quantite.hpp 
-    Include/DataBreakInfoModel.hpp 
+    Include/DataBreakInfoModel.hpp
+    Include/InstructionBreakInfoModel.hpp
     Include/QuantiteViewModel.hpp
 
     UI/mainwindow.ui

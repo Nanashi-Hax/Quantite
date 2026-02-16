@@ -14,6 +14,7 @@ static std::unique_ptr<IPInfo> ipInfo;
 
 ON_APP_START()
 {
+    WHBLogUdpInit();
     NotificationModule_InitLibrary();
     Library::Debug::Initialize();
     ipInfo = std::make_unique<IPInfo>();
@@ -26,4 +27,5 @@ ON_APP_END()
     ipInfo.reset();
     Library::Debug::Shutdown();
     NotificationModule_DeInitLibrary();
+    WHBLogUdpDeinit();
 }

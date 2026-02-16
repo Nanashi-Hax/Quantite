@@ -21,13 +21,14 @@ using namespace Library::IO;
 
 enum class Quantite::Command : uint32_t
 {
-    MemoryWrite32 = 0x0,
-    SetDataBreakpoint = 0x1
+    SetDataBreakpoint = 0x0,
+    SetInstructionBreakpoint = 0x1
 };
 
 enum class Quantite::Data : uint32_t
 {
     DataBreakInfo = 0x0,
+    InstructionBreakInfo = 0x1
 };
 
 Quantite::Quantite(IPInfo * info)
@@ -120,21 +121,37 @@ void Quantite::BreakLoop(std::stop_token token)
     {
         try
         {
-            auto info = Library::Debug::ConsumeDataBreakInfo();
+            auto dInfo = Library::Debug::ConsumeDataBreakInfo();
+            auto iInfo = Library::Debug::ConsumeInstructionBreakInfo();
+            if(transporter)
             {
-                if(client)
                 {
                     uint32_t id = static_cast<uint32_t>(Data::DataBreakInfo);
-                    uint32_t count = info.size();
+                    uint32_t count = dInfo.size();
                     if(count > 0)
                     {
                         BufferStream stream;
                         stream << id << count;
-                        for(auto& it : info)
+                        for(auto& it : dInfo)
                         {
                             uint32_t dAddress = it.dar;
                             uint32_t iAddress = it.pc;
                             stream << dAddress << iAddress;
+                        }
+                        transporter->write(BufferStream::toPacket(stream));
+                    }
+                }
+                {
+                    uint32_t id = static_cast<uint32_t>(Data::InstructionBreakInfo);
+                    uint32_t count = iInfo.size();
+                    if(count > 0)
+                    {
+                        BufferStream stream;
+                        stream << id << count;
+                        for(auto& it : iInfo)
+                        {
+                            uint32_t iAddress = it.pc;
+                            stream << iAddress;
                         }
                         transporter->write(BufferStream::toPacket(stream));
                     }
@@ -197,15 +214,6 @@ void Quantite::ProcessCommand(Stream& stream)
     
     switch (command)
     {
-        case Command::MemoryWrite32:
-        {
-            uint32_t address;
-            uint32_t value;
-            stream >> address >> value;
-            NotificationModule_AddInfoNotification(std::format("Address: {0:08X}, Value: {1:08X}", address, value).c_str());
-            *(uint32_t*)address = value;
-            break;
-        }
         case Command::SetDataBreakpoint:
         {
             using BreakpointSize = Library::Debug::BreakpointSize;
@@ -241,6 +249,24 @@ void Quantite::ProcessCommand(Stream& stream)
             {
                 NotificationModule_AddInfoNotification("Unset data breakpoint");
                 Library::Debug::UnsetDataBreakpoint();
+            }
+            break;
+        }
+        case Command::SetInstructionBreakpoint:
+        {
+            uint32_t enable;
+            uint32_t address;
+            stream >> enable >> address;
+        
+            if(enable)
+            {        
+                NotificationModule_AddInfoNotification(std::format("Set instruction breakpoint at 0x{:08X}", address).c_str());
+                Library::Debug::SetInstructionBreakpoint(address);
+            }
+            else
+            {
+                NotificationModule_AddInfoNotification("Unset instruction breakpoint");
+                Library::Debug::UnsetInstructionBreakpoint();
             }
             break;
         }

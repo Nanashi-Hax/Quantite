@@ -12,6 +12,7 @@ class Quantite
 {   
 public:
     using DataBreakInfoCallbackFunction = std::function<void(uint32_t, uint32_t)>;
+    using InstructionBreakInfoCallbackFunction = std::function<void(uint32_t)>;
 
     enum class BreakpointSize : uint32_t
     {
@@ -35,8 +36,11 @@ public:
 
     void setDataBreakpoint(uint32_t address, bool read, bool write, Quantite::BreakpointSize size);
     void unsetDataBreakpoint();
-
     void setDataBreakInfoCallback(DataBreakInfoCallbackFunction function);
+
+    void setInstructionBreakpoint(uint32_t address);
+    void unsetInstructionBreakpoint();
+    void setInstructionBreakInfoCallback(InstructionBreakInfoCallbackFunction function);
 
 private:
     void processData(Library::IO::Stream& stream);
@@ -49,6 +53,7 @@ private:
     std::unique_ptr<Library::IO::Transporter> transporter;
 
     DataBreakInfoCallbackFunction dataBreakInfoCallback;
+    InstructionBreakInfoCallbackFunction instructionBreakInfoCallback;
 
     static constexpr const uint16_t Quantite_PORT = 60000;
 

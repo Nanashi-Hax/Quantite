@@ -2,7 +2,7 @@
 
 DataBreakInfoEntry::DataBreakInfoEntry(uint32_t dataAddress, uint32_t instructionAddress)
 :
-_dataAddress(dataAddress), _instructionAddress(instructionAddress), _times(0) {}
+_dataAddress(dataAddress), _instructionAddress(instructionAddress), _times(1) {}
 
 uint32_t DataBreakInfoEntry::dataAddress() const
 {
@@ -61,11 +61,11 @@ QVariant DataBreakInfoModel::data(const QModelIndex & index, int role) const
             }
             default:
             {
-                return QVariant();
+                return QVariant{};
             }
         }
     }
-    return QVariant();
+    return QVariant{};
 }
 
 void DataBreakInfoModel::add(DataBreakInfoEntry entry)
