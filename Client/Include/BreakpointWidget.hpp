@@ -1,29 +1,24 @@
 #pragma once
 
-#include <QMainWindow>
-#include "QuantiteViewModel.hpp"
+#include <QWidget>
+#include "Quantite.hpp"
 #include "DataBreakInfoModel.hpp"
 #include "InstructionBreakInfoModel.hpp"
 
-QT_BEGIN_NAMESPACE
 namespace Ui
 {
-    class MainWindow;
+    class BreakpointWidget;
 }
-QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
+class BreakpointWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    MainWindow(QWidget *parent = nullptr);
-    ~MainWindow();
+    explicit BreakpointWidget(QWidget *parent = nullptr);
+    ~BreakpointWidget();
 
 public slots:
-    void onConnect();
-    void onDisconnect();
-
     void onSetDataBreakpoint();
     void onDataBreakpointClear();
     void onDataBreakReceived(uint32_t dAddress, uint32_t iAddress);
@@ -33,12 +28,6 @@ public slots:
     void onInstructionBreakReceived(uint32_t iAddress);
 
 signals:
-    void requestStart();
-    void requestStop();
-
-    void requestConnectServer(const QString& ipAddress);
-    void requestDisconnectServer();
-
     void requestSetDataBreakpoint(uint32_t address, bool read, bool write, Quantite::BreakpointSize size);
     void requestUnsetDataBreakpoint();
 
@@ -46,9 +35,7 @@ signals:
     void requestUnsetInstructionBreakpoint();
 
 private:
-    Ui::MainWindow *ui;
-    QuantiteViewModel Quantite;
+    Ui::BreakpointWidget *ui;
     DataBreakInfoModel dataBreakInfoModel;
     InstructionBreakInfoModel instructionBreakInfoModel;
 };
-

@@ -16,19 +16,26 @@ qt_add_executable(Quantite
     WIN32 MACOSX_BUNDLE
 
     Source/main.cpp
-    Source/mainwindow.cpp
+    Source/MainWindow.cpp
+    Source/BreakpointWidget.cpp
+    Source/ConnectionWidget.cpp
     Source/Quantite.cpp
     Source/DataBreakInfoModel.cpp
     Source/InstructionBreakInfoModel.cpp
     Source/QuantiteViewModel.cpp
     
-    Include/mainwindow.h
+    Include/MainWindow.hpp
+    Include/BreakpointWidget.hpp
+    Include/ConnectionWidget.hpp
     Include/Quantite.hpp 
     Include/DataBreakInfoModel.hpp
     Include/InstructionBreakInfoModel.hpp
     Include/QuantiteViewModel.hpp
 
-    UI/mainwindow.ui
+    UI/MainWindow.ui
+    UI/BreakpointWidget.ui
+    UI/ConnectionWidget.ui
+
 )
 
 target_include_directories(Quantite
