@@ -20,16 +20,18 @@ qt_add_executable(Quantite
     Source/BreakpointWidget.cpp
     Source/ConnectionWidget.cpp
     Source/Quantite.cpp
-    Source/DataBreakInfoModel.cpp
-    Source/InstructionBreakInfoModel.cpp
+    Source/BreakInfoModel.cpp
+    Source/Utl.cpp
+
     Source/QuantiteViewModel.cpp
     
     Include/MainWindow.hpp
     Include/BreakpointWidget.hpp
     Include/ConnectionWidget.hpp
     Include/Quantite.hpp 
-    Include/DataBreakInfoModel.hpp
-    Include/InstructionBreakInfoModel.hpp
+    Include/BreakInfoModel.hpp
+    Include/Utl.hpp
+
     Include/QuantiteViewModel.hpp
 
     UI/MainWindow.ui

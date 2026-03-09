@@ -2,8 +2,7 @@
 
 #include <QWidget>
 #include "Quantite.hpp"
-#include "DataBreakInfoModel.hpp"
-#include "InstructionBreakInfoModel.hpp"
+#include "BreakInfoModel.hpp"
 
 namespace Ui
 {
@@ -21,11 +20,13 @@ public:
 public slots:
     void onSetDataBreakpoint();
     void onDataBreakpointClear();
-    void onDataBreakReceived(uint32_t dAddress, uint32_t iAddress);
+    void onDataBreakReceived(RegisterInfo info);
+    void onSetDataPrimaryKey();
 
     void onSetInstructionBreakpoint();
     void onInstructionBreakpointClear();
-    void onInstructionBreakReceived(uint32_t iAddress);
+    void onInstructionBreakReceived(RegisterInfo info);
+    void onSetInstructionPrimaryKey();
 
 signals:
     void requestSetDataBreakpoint(uint32_t address, bool read, bool write, Quantite::BreakpointSize size);
@@ -36,6 +37,6 @@ signals:
 
 private:
     Ui::BreakpointWidget *ui;
-    DataBreakInfoModel dataBreakInfoModel;
-    InstructionBreakInfoModel instructionBreakInfoModel;
+    BreakInfoModel dataBreakInfoModel;
+    BreakInfoModel instructionBreakInfoModel;
 };

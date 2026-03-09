@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include "Quantite.hpp"
+#include "BreakInfoModel.hpp"
 
 class QuantiteViewModel : public QObject
 {
@@ -21,12 +22,12 @@ public slots:
     void onUnsetInstructionBreakpoint();
 
 public:
-    void onDataBreakReceived(uint32_t dAddress, uint32_t iAddress);
-    void onInstructionBreakReceived(uint32_t iAddress);
+    void onDataBreakReceived(RegisterInfo info);
+    void onInstructionBreakReceived(RegisterInfo info);
 
 signals:
-    void dataBreakReceived(uint32_t dAddress, uint32_t iAddress);
-    void instructionBreakReceived(uint32_t iAddress);
+    void dataBreakReceived(RegisterInfo info);
+    void instructionBreakReceived(RegisterInfo info);
 
 private:
     Quantite Quantite;

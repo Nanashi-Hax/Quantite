@@ -4,8 +4,8 @@
 void QuantiteViewModel::onStart()
 {
     Quantite.start();
-    Quantite.setDataBreakInfoCallback([this](uint32_t d, uint32_t i){ onDataBreakReceived(d, i); });
-    Quantite.setInstructionBreakInfoCallback([this](uint32_t i){ onInstructionBreakReceived(i); });
+    Quantite.setDataBreakInfoCallback([this](RegisterInfo info){ onDataBreakReceived(info); });
+    Quantite.setInstructionBreakInfoCallback([this](RegisterInfo info){ onInstructionBreakReceived(info); });
 }
 
 void QuantiteViewModel::onStop()
@@ -43,12 +43,12 @@ void QuantiteViewModel::onUnsetInstructionBreakpoint()
     Quantite.unsetInstructionBreakpoint();
 }
 
-void QuantiteViewModel::onDataBreakReceived(uint32_t dAddress, uint32_t iAddress)
+void QuantiteViewModel::onDataBreakReceived(RegisterInfo info)
 {
-    emit dataBreakReceived(dAddress, iAddress);
+    emit dataBreakReceived(info);
 }
 
-void QuantiteViewModel::onInstructionBreakReceived(uint32_t iAddress)
+void QuantiteViewModel::onInstructionBreakReceived(RegisterInfo info)
 {
-    emit instructionBreakReceived(iAddress);
+    emit instructionBreakReceived(info);
 }

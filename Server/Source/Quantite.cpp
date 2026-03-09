@@ -1,6 +1,7 @@
 #include "Quantite.hpp"
 #include "IPInfo.hpp"
-#include "notifications/notifications.h"
+#include "Utl.hpp"
+#include <notifications/notifications.h>
 #include <Debug.hpp>
 #include <IO.hpp>
 
@@ -134,9 +135,7 @@ void Quantite::BreakLoop(std::stop_token token)
                         stream << id << count;
                         for(auto& it : dInfo)
                         {
-                            uint32_t dAddress = it.dar;
-                            uint32_t iAddress = it.pc;
-                            stream << dAddress << iAddress;
+                            Utl::PushRegister(stream, it);
                         }
                         transporter->write(BufferStream::toPacket(stream));
                     }
@@ -150,8 +149,7 @@ void Quantite::BreakLoop(std::stop_token token)
                         stream << id << count;
                         for(auto& it : iInfo)
                         {
-                            uint32_t iAddress = it.pc;
-                            stream << iAddress;
+                            Utl::PushRegister(stream, it);
                         }
                         transporter->write(BufferStream::toPacket(stream));
                     }

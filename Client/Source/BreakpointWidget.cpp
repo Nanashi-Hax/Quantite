@@ -3,10 +3,29 @@
 
 BreakpointWidget::BreakpointWidget(QWidget *parent)
 :
-QWidget(parent), ui(new Ui::BreakpointWidget)
+QWidget(parent), ui(new Ui::BreakpointWidget), dataBreakInfoModel(Register::PC, 0), instructionBreakInfoModel(Register::DAR, 0)
 {
     ui->setupUi(this);
 
+    // レジスタ第1キー
+    ui->comboBoxDataPrimaryKey->addItem("PC",  static_cast<uint32_t>(Register::PC));
+    ui->comboBoxDataPrimaryKey->addItem("DAR", static_cast<uint32_t>(Register::DAR));
+    ui->comboBoxDataPrimaryKey->addItem("GPR", static_cast<uint32_t>(Register::GPR));
+    ui->comboBoxDataPrimaryKey->addItem("FPR", static_cast<uint32_t>(Register::FPR));
+    ui->comboBoxDataPrimaryKey->addItem("CR", static_cast<uint32_t>(Register::CR));
+    ui->comboBoxDataPrimaryKey->addItem("LR", static_cast<uint32_t>(Register::LR));
+    ui->comboBoxDataPrimaryKey->addItem("CTR", static_cast<uint32_t>(Register::CTR));
+    connect(ui->pushButtonSetDataPrimaryKey, &QPushButton::clicked, this, &BreakpointWidget::onSetDataPrimaryKey);
+    ui->comboBoxInstructionPrimaryKey->addItem("PC",  static_cast<uint32_t>(Register::PC));
+    ui->comboBoxInstructionPrimaryKey->addItem("DAR", static_cast<uint32_t>(Register::DAR));
+    ui->comboBoxInstructionPrimaryKey->addItem("GPR", static_cast<uint32_t>(Register::GPR));
+    ui->comboBoxInstructionPrimaryKey->addItem("FPR", static_cast<uint32_t>(Register::FPR));
+    ui->comboBoxInstructionPrimaryKey->addItem("CR", static_cast<uint32_t>(Register::CR));
+    ui->comboBoxInstructionPrimaryKey->addItem("LR", static_cast<uint32_t>(Register::LR));
+    ui->comboBoxInstructionPrimaryKey->addItem("CTR", static_cast<uint32_t>(Register::CTR));
+    connect(ui->pushButtonSetInstructionPrimaryKey, &QPushButton::clicked, this, &BreakpointWidget::onSetInstructionPrimaryKey);
+
+    // ボタン
     connect(ui->pushButtonSetData, &QPushButton::clicked, this, &BreakpointWidget::onSetDataBreakpoint);
     connect(ui->pushButtonDataClear, &QPushButton::clicked, this, &BreakpointWidget::onDataBreakpointClear);
     connect(ui->pushButtonSetInstruction, &QPushButton::clicked, this, &BreakpointWidget::onSetInstructionBreakpoint);
@@ -54,10 +73,18 @@ void BreakpointWidget::onDataBreakpointClear()
     dataBreakInfoModel.clear();
 }
 
-void BreakpointWidget::onDataBreakReceived(uint32_t dAddress, uint32_t iAddress)
+void BreakpointWidget::onDataBreakReceived(RegisterInfo info)
 {
-    DataBreakInfoEntry entry(dAddress, iAddress);
+    BreakInfoEntry entry(info);
     dataBreakInfoModel.add(entry);
+}
+
+void BreakpointWidget::onSetDataPrimaryKey()
+{
+    auto data = ui->comboBoxDataPrimaryKey->currentData();
+    Register kind = data.value<Register>();
+    int index = ui->spinBoxDataPrimaryKeyIndex->value();
+    dataBreakInfoModel.setPrimaryKey(kind, index);
 }
 
 void BreakpointWidget::onSetInstructionBreakpoint()
@@ -76,8 +103,16 @@ void BreakpointWidget::onInstructionBreakpointClear()
     instructionBreakInfoModel.clear();
 }
 
-void BreakpointWidget::onInstructionBreakReceived(uint32_t iAddress)
+void BreakpointWidget::onInstructionBreakReceived(RegisterInfo info)
 {
-    InstructionBreakInfoEntry entry(iAddress);
+    BreakInfoEntry entry(info);
     instructionBreakInfoModel.add(entry);
+}
+
+void BreakpointWidget::onSetInstructionPrimaryKey()
+{
+    auto data = ui->comboBoxInstructionPrimaryKey->currentData();
+    Register kind = data.value<Register>();
+    int index = ui->spinBoxInstructionPrimaryKeyIndex->value();
+    instructionBreakInfoModel.setPrimaryKey(kind, index);
 }

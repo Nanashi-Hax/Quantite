@@ -26,6 +26,32 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_4">
       <item>
+       <widget class="QGroupBox" name="groupBoxDataKey">
+        <property name="title">
+         <string>Key</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QComboBox" name="comboBoxDataPrimaryKey"/>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spinBoxDataPrimaryKeyIndex">
+           <property name="maximum">
+            <number>31</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonSetDataPrimaryKey">
+           <property name="text">
+            <string>Set</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
        <widget class="QTableView" name="tableViewData"/>
       </item>
       <item>
@@ -120,6 +146,32 @@
       <string>Instruction</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QGroupBox" name="groupBoxInstructionKey">
+        <property name="title">
+         <string>Key</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_4">
+         <item>
+          <widget class="QComboBox" name="comboBoxInstructionPrimaryKey"/>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="spinBoxInstructionPrimaryKeyIndex">
+           <property name="maximum">
+            <number>31</number>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonSetInstructionPrimaryKey">
+           <property name="text">
+            <string>Set</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
       <item>
        <widget class="QTableView" name="tableViewInstruction"/>
       </item>

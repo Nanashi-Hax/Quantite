@@ -8,11 +8,13 @@
 #include <thread>
 #include <functional>
 
+#include "BreakInfoModel.hpp"
+
 class Quantite
 {   
 public:
-    using DataBreakInfoCallbackFunction = std::function<void(uint32_t, uint32_t)>;
-    using InstructionBreakInfoCallbackFunction = std::function<void(uint32_t)>;
+    using DataBreakInfoCallbackFunction = std::function<void(RegisterInfo)>;
+    using InstructionBreakInfoCallbackFunction = std::function<void(RegisterInfo)>;
 
     enum class BreakpointSize : uint32_t
     {
@@ -43,7 +45,7 @@ public:
     void setInstructionBreakInfoCallback(InstructionBreakInfoCallbackFunction function);
 
 private:
-    void processData(Library::IO::Stream& stream);
+    void processData(Library::IO::BufferStream& stream);
 
     std::unique_ptr<std::jthread> processThread;
 

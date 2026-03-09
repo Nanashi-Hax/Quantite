@@ -2,6 +2,7 @@
 #include <IO.hpp>
 #include <Network.hpp>
 #include <QDebug>
+#include "Utl.hpp"
 
 using namespace Library::IO;
 using namespace Library::Network;
@@ -180,7 +181,7 @@ void Quantite::processLoop(std::stop_token token)
     }
 }
 
-void Quantite::processData(Stream& stream)
+void Quantite::processData(BufferStream& stream)
 {
     Data data;
     {
@@ -197,10 +198,9 @@ void Quantite::processData(Stream& stream)
             stream >> count;
             for(uint32_t i = 0; i < count; i++)
             {
-                uint32_t dataAddress = 0;
-                uint32_t instructionAddress = 0;
-                stream >> dataAddress >> instructionAddress;
-                if(dataBreakInfoCallback) dataBreakInfoCallback(dataAddress, instructionAddress);
+                RegisterInfo info;
+                Utl::PullRegister(stream, info);
+                if(dataBreakInfoCallback) dataBreakInfoCallback(info);
             }
             break;
         }
@@ -210,9 +210,9 @@ void Quantite::processData(Stream& stream)
             stream >> count;
             for(uint32_t i = 0; i < count; i++)
             {
-                uint32_t instructionAddress = 0;
-                stream >> instructionAddress;
-                if(instructionBreakInfoCallback) instructionBreakInfoCallback(instructionAddress);
+                RegisterInfo info;
+                Utl::PullRegister(stream, info);
+                if(instructionBreakInfoCallback) instructionBreakInfoCallback(info);
             }
             break;
         }
