@@ -4,6 +4,7 @@
 #include <IO/Transporter.hpp>
 #include <thread>
 #include <stop_token>
+#include <mutex>
 
 #include <coreinit/context.h>
 
@@ -44,6 +45,7 @@ private:
     std::mutex clientMutex;
 
     std::unique_ptr<Library::IO::Transporter> transporter;
+    std::mutex transporterMutex;
 
     static constexpr const uint16_t Quantite_PORT = 60000;
 

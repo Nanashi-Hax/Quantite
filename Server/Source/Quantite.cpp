@@ -4,6 +4,7 @@
 #include <notifications/notifications.h>
 #include <Debug.hpp>
 #include <IO.hpp>
+#include <Hook.hpp>
 
 #include <chrono>
 #include <coreinit/exception.h>
@@ -11,6 +12,7 @@
 #include <memory>
 #include <mutex>
 #include <thread>
+#include <vector>
 #include <whb/log.h>
 
 #include <Logger.hpp>
@@ -23,13 +25,15 @@ using namespace Library::IO;
 enum class Quantite::Command : uint32_t
 {
     SetDataBreakpoint = 0x0,
-    SetInstructionBreakpoint = 0x1
+    SetInstructionBreakpoint = 0x1,
+    ReadMemory = 0x2
 };
 
 enum class Quantite::Data : uint32_t
 {
     DataBreakInfo = 0x0,
-    InstructionBreakInfo = 0x1
+    InstructionBreakInfo = 0x1,
+    MemoryInfo = 0x2
 };
 
 Quantite::Quantite(IPInfo * info)
@@ -62,7 +66,10 @@ Quantite::~Quantite()
     if(client)
     {
         std::lock_guard<std::mutex> lock(clientMutex);
-        
+        {
+            std::lock_guard<std::mutex> transportLock(transporterMutex);
+            transporter.reset();
+        }
         client->shutdown();
         client.reset();
     }
@@ -93,24 +100,33 @@ void Quantite::ProcessLoop(std::stop_token token)
 {
     while(!token.stop_requested())
     {
-        if(transporter)
+        try
         {
-            try
+            std::vector<Packet> packets;
             {
-                transporter->poll();
-                while(true)
+                std::lock_guard<std::mutex> transportLock(transporterMutex);
+                if(transporter)
                 {
-                    Packet packet;
-                    if(!transporter->read(packet)) break;
-                    BufferStream stream = BufferStream::fromPacket(packet);
-                    ProcessCommand(stream);
+                    transporter->poll();
+                    while(true)
+                    {
+                        Packet packet;
+                        if(!transporter->read(packet)) break;
+                        packets.emplace_back(std::move(packet));
+                    }
                 }
             }
-            catch(std::exception& e)
+
+            for(auto& packet : packets)
             {
-                NotificationModule_AddInfoNotification(std::format("Quantite::ProcessLoop(): {}", e.what()).c_str());
-                DisconnectClient();
+                BufferStream stream = BufferStream::fromPacket(packet);
+                ProcessCommand(stream);
             }
+        }
+        catch(std::exception& e)
+        {
+            NotificationModule_AddInfoNotification(std::format("Quantite::ProcessLoop(): {}", e.what()).c_str());
+            DisconnectClient();
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
@@ -124,6 +140,7 @@ void Quantite::BreakLoop(std::stop_token token)
         {
             auto dInfo = Library::Debug::ConsumeDataBreakInfo();
             auto iInfo = Library::Debug::ConsumeInstructionBreakInfo();
+            std::lock_guard<std::mutex> transportLock(transporterMutex);
             if(transporter)
             {
                 {
@@ -182,6 +199,7 @@ void Quantite::AcceptClient()
     {
         std::lock_guard<std::mutex> lock(clientMutex);
         client = std::make_unique<Library::Network::TcpSocket>(std::move(*s));
+        std::lock_guard<std::mutex> transportLock(transporterMutex);
         transporter = std::make_unique<Library::IO::Transporter>(*client);
     }
     NotificationModule_AddInfoNotification("Client connected");
@@ -192,7 +210,10 @@ void Quantite::DisconnectClient()
     if(client)
     {
         std::lock_guard<std::mutex> lock(clientMutex);
-        transporter.reset();
+        {
+            std::lock_guard<std::mutex> transportLock(transporterMutex);
+            transporter.reset();
+        }
         client->shutdown();
         client.reset();
         NotificationModule_AddInfoNotification("Disconnected");

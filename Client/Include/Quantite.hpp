@@ -7,6 +7,7 @@
 #include <stop_token>
 #include <thread>
 #include <functional>
+#include <mutex>
 
 #include "BreakInfoModel.hpp"
 
@@ -53,6 +54,7 @@ private:
     std::mutex socketMutex;
 
     std::unique_ptr<Library::IO::Transporter> transporter;
+    std::mutex transporterMutex;
 
     DataBreakInfoCallbackFunction dataBreakInfoCallback;
     InstructionBreakInfoCallbackFunction instructionBreakInfoCallback;

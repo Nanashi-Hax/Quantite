@@ -104,6 +104,7 @@ void BreakInfoModel::setPrimaryKey(Register key, int index)
 {
     _primaryKey = key;
     _primaryIndex = index;
+    clear();
 }
 
 void BreakInfoModel::add(BreakInfoEntry entry)
@@ -115,7 +116,7 @@ void BreakInfoModel::add(BreakInfoEntry entry)
         {
             it.addTimes();
 
-            QModelIndex idx = index(i, 2);
+            QModelIndex idx = index(i, 1);
             emit dataChanged(idx, idx);
 
             return;

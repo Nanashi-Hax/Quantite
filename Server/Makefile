@@ -26,7 +26,7 @@ MachineDependent := -DESPRESSO -mcpu=750 -meabi -mhard-float -D__WIIU__
 #-------------------------------------------------------------------------------
 TopDir := $(CURDIR)
 
-Target := Example
+Target := Quantite
 
 SourceDir := $(TopDir)/Source
 IncludeDir := $(TopDir)/Include

@@ -3,6 +3,7 @@
 #include <Network.hpp>
 #include <QDebug>
 #include "Utl.hpp"
+#include <vector>
 
 using namespace Library::IO;
 using namespace Library::Network;
@@ -47,7 +48,10 @@ void Quantite::connectServer(const std::string& ipAddress)
     {
         socket = std::make_unique<TcpSocket>();
         socket->connect(ipAddress, Quantite_PORT);
-        transporter = std::make_unique<Transporter>(*socket);
+        {
+            std::lock_guard<std::mutex> transportLock(transporterMutex);
+            transporter = std::make_unique<Transporter>(*socket);
+        }
         qDebug() << "Connected";
     }
 }
@@ -57,7 +61,10 @@ void Quantite::disconnectServer()
     std::lock_guard<std::mutex> lock(socketMutex);
     if(socket)
     {
-        transporter.reset();
+        {
+            std::lock_guard<std::mutex> transportLock(transporterMutex);
+            transporter.reset();
+        }
         socket->shutdown();
         socket.reset();
         qDebug() << "Disconnected";
@@ -66,7 +73,6 @@ void Quantite::disconnectServer()
 
 void Quantite::setDataBreakpoint(uint32_t address, bool read, bool write, BreakpointSize size)
 {
-    if(!transporter) return;
     try
     {
         BufferStream stream;
@@ -76,6 +82,8 @@ void Quantite::setDataBreakpoint(uint32_t address, bool read, bool write, Breakp
         uint32_t w = static_cast<uint32_t>(write);
         uint32_t s = static_cast<uint32_t>(size);
         stream << id << enable << address << r << w << s;
+        std::lock_guard<std::mutex> transportLock(transporterMutex);
+        if(!transporter) return;
         transporter->write(BufferStream::toPacket(stream));
     }
     catch(std::exception& e)
@@ -87,7 +95,6 @@ void Quantite::setDataBreakpoint(uint32_t address, bool read, bool write, Breakp
 
 void Quantite::unsetDataBreakpoint()
 {
-    if(!transporter) return;
     try
     {
         BufferStream stream;
@@ -98,6 +105,8 @@ void Quantite::unsetDataBreakpoint()
         uint32_t w = 0;
         uint32_t s = static_cast<uint32_t>(BreakpointSize::Invalid);
         stream << id << enable << address << r << w << s;
+        std::lock_guard<std::mutex> transportLock(transporterMutex);
+        if(!transporter) return;
         transporter->write(BufferStream::toPacket(stream));
     }
     catch(std::exception& e)
@@ -114,13 +123,14 @@ void Quantite::setDataBreakInfoCallback(DataBreakInfoCallbackFunction function)
 
 void Quantite::setInstructionBreakpoint(uint32_t address)
 {
-    if(!transporter) return;
     try
     {
         BufferStream stream;
         uint32_t id = static_cast<uint32_t>(Command::SetInstructionBreakpoint);
         uint32_t enable = static_cast<uint32_t>(true);
         stream << id << enable << address;
+        std::lock_guard<std::mutex> transportLock(transporterMutex);
+        if(!transporter) return;
         transporter->write(BufferStream::toPacket(stream));
     }
     catch(std::exception& e)
@@ -132,7 +142,6 @@ void Quantite::setInstructionBreakpoint(uint32_t address)
 
 void Quantite::unsetInstructionBreakpoint()
 {
-    if(!transporter) return;
     try
     {
         BufferStream stream;
@@ -140,6 +149,8 @@ void Quantite::unsetInstructionBreakpoint()
         uint32_t enable = 0;
         uint32_t address = 0;
         stream << id << enable << address;
+        std::lock_guard<std::mutex> transportLock(transporterMutex);
+        if(!transporter) return;
         transporter->write(BufferStream::toPacket(stream));
     }
     catch(std::exception& e)
@@ -158,24 +169,33 @@ void Quantite::processLoop(std::stop_token token)
 {
     while(!token.stop_requested())
     {
-        if(transporter)
+        try
         {
-            try
+            std::vector<Packet> packets;
             {
-                transporter->poll();
-                while(true)
+                std::lock_guard<std::mutex> transportLock(transporterMutex);
+                if(transporter)
                 {
-                    Packet packet;
-                    if(!transporter->read(packet)) break;
-                    BufferStream stream = BufferStream::fromPacket(packet);
-                    processData(stream);
+                    transporter->poll();
+                    while(true)
+                    {
+                        Packet packet;
+                        if(!transporter->read(packet)) break;
+                        packets.emplace_back(std::move(packet));
+                    }
                 }
             }
-            catch(std::exception& e)
+
+            for(auto& packet : packets)
             {
-                qDebug() << e.what();
-                disconnectServer();
+                BufferStream stream = BufferStream::fromPacket(packet);
+                processData(stream);
             }
+        }
+        catch(std::exception& e)
+        {
+            qDebug() << e.what();
+            disconnectServer();
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
